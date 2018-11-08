@@ -1,0 +1,115 @@
+/* tslint:disable */
+
+{{>licenseInfo}}
+
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import * as models from '../model/models'
+
+
+{{#operations}}
+{{#description}}
+/**
+ * {{&description}}
+ */
+{{/description}}
+export class {{classname}} {
+  public defaultExtraAxiosRequestConfig: AxiosRequestConfig = {}
+  protected basePath = '{{{basePath}}}'
+  protected defaultHeaders: { [key: string]: string } = {
+    // disable caching for IE
+    'pragma': 'no-cache',
+    'cache-control': 'no-cache'
+  }
+
+  constructor(basePath?: string, defaultExtraAxiosRequestConfig?: AxiosRequestConfig) {
+    if (basePath) {
+      this.basePath = basePath
+    }
+
+    if (defaultExtraAxiosRequestConfig) {
+      this.defaultExtraAxiosRequestConfig = defaultExtraAxiosRequestConfig
+    }
+  }
+
+{{#operation}}
+  /**
+   * {{&notes}}
+   {{#summary}}
+   * @summary {{&summary}}
+   {{/summary}}
+   {{#allParams}}
+   * @param {{paramName}} {{description}}
+   {{/allParams}}
+   */
+  public {{nickname}}({{#hasPathParams}}{{#pathParams}}{{paramName}}: {{{dataType}}}, {{/pathParams}}{{/hasPathParams}}{{#hasQueryParams}}queryParameters: { {{#queryParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}; {{/queryParams}} }, {{/hasQueryParams}}{{#hasBodyParam}}{{#bodyParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/bodyParams}}{{/hasBodyParam}}extraAxiosRequestConfig: AxiosRequestConfig = {}): Promise<AxiosResponse<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}any{{/returnType}}>> {
+    const localVarPath = this.basePath + '{{{path}}}'{{#pathParams}}.replace('{' + '{{baseName}}' + '}', encodeURIComponent(String({{paramName}}))){{/pathParams}}
+
+    const headers: { [key: string]: string } = {
+      ...this.defaultHeaders
+    }
+{{#hasFormParams}}
+    const formParams = new FormData()
+    let reqHasFile = false
+
+{{/hasFormParams}}
+
+{{#formParams}}
+{{#isFile}}
+    reqHasFile = true
+    formParams.append("{{baseName}}", {{paramName}})
+{{/isFile}}
+{{^isFile}}
+  {{#isListContainer}}
+    if ({{paramName}}) {
+      {{#isCollectionFormatMulti}}
+      {{paramName}}.forEach((element: any) => {
+        formParams.append('{{baseName}}', element)
+      })
+      {{/isCollectionFormatMulti}}
+    }
+    {{/isListContainer}}
+    {{^isListContainer}}
+    if ({{paramName}} !== null && {{paramName}} !== undefined) {
+      formParams.append('{{baseName}}', <any>{{paramName}})
+    }
+    {{/isListContainer}}
+{{/isFile}}
+{{/formParams}}
+{{#headerParams}}
+    {{^isListContainer}}
+    headerParams['{{baseName}}'] = String({{paramName}})
+    {{/isListContainer}}
+
+{{/headerParams}}
+
+{{#hasFormParams}}
+    if (!reqHasFile) {
+      headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    }
+
+{{/hasFormParams}}
+
+    let requestOptions: AxiosRequestConfig = {
+      url: localVarPath,
+      {{#hasQueryParams}}
+      params: queryParameters,
+      {{/hasQueryParams}}
+      {{#bodyParam}}
+      data: {{paramName}},
+      {{/bodyParam}}
+      {{#hasFormParams}}
+      data: formParams,
+      {{/hasFormParams}}
+      method: '{{httpMethod}}',
+      headers: headers,
+      withCredentials: true,
+      ...this.defaultExtraAxiosRequestConfig,
+      ...extraAxiosRequestConfig
+    }
+
+    return axios.request(requestOptions)
+  }
+
+{{/operation}}
+}
+{{/operations}}

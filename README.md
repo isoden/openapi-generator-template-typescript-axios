@@ -1,0 +1,1 @@
+# swagger-template-typescript-axios

@@ -1,0 +1,17 @@
+/* tslint:disable */
+
+{{>licenseInfo}}
+
+// @ts-ignore
+import * as models from './models'
+{{#models}}
+{{#model}}
+
+{{#description}}
+/**
+ * {{{description}}}
+ */
+{{/description}}
+{{#isEnum}}{{>modelEnum}}{{/isEnum}}{{^isEnum}}{{>modelGeneric}}{{/isEnum}}
+{{/model}}
+{{/models}}
